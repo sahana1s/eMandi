@@ -571,7 +571,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: url('D:\sem5\eMandi\emandi_app\frontend\public\farm.jpg'); /* Replace with your image URL */
+  background-image: url('farm.jpg'); 
   background-size: cover; /* Cover the entire area */
   background-position: center; /* Center the image */
   opacity: 0.5; /* Set the transparency */
