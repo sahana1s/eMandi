@@ -10,27 +10,44 @@ const LogisticsPage = () => {
     const [error, setError] = useState(null);  // Error state for user feedback
     const [successMessage, setSuccessMessage] = useState(null);  // Success state for user feedback
 
+    // Regular Expression to check if task title and produce ID are alphanumeric
+    const alphanumericRegex = /^[a-zA-Z0-9]+$/;
+
+    // Validation function for task title, produce ID, and highest bid
+    const validateForm = () => {
+        if (typeof taskTitle !== 'string' || taskTitle.trim() === '' || !alphanumericRegex.test(taskTitle)) {
+            return 'Task title must be alphanumeric (letters and numbers) and cannot be empty.';
+        }
+        if (typeof produceId !== 'string' || produceId.trim() === '' || !alphanumericRegex.test(produceId)) {
+            return 'Produce ID must be alphanumeric (letters and numbers) and cannot be empty.';
+        }
+        if (highestBid === null || highestBid <= 0) {
+            return 'Please ensure the highest bid is a positive number.';
+        }
+        return null;
+    };
+
     // Fetch tasks when the component mounts
     useEffect(() => {
         fetchTasks();
     }, []);
 
+    // Fetch tasks
     const fetchTasks = () => {
         axios.get('http://localhost:5000/logistics/tasks')
             .then(response => {
                 if (response.data && response.data.length > 0) {
-                    setTasks(response.data);  // Set tasks if the response has data
+                    setTasks(response.data);  
                 } else {
-                    setTasks([]);  // If no tasks, set an empty array
+                    setTasks([]);  
                     setError("No tasks found.");
                 }
             })
             .catch(err => {
                 console.error("Error fetching tasks:", err);
-                setError("Error fetching tasks!");  // Show error message
+                setError("Error fetching tasks!");  
             });
     };
-    
 
     // Fetch the highest bid for a specific produce ID
     const fetchHighestBid = (produce_id) => {
@@ -46,14 +63,15 @@ const LogisticsPage = () => {
             })
             .catch(err => {
                 console.error("Error fetching highest bid:", err);
-                setError("Error fetching highest bid!");  // Set error message
+                setError("Error fetching highest bid!");  
             });
     };
 
     // Add a task
     const handleAddTask = () => {
-        if (!highestBid) {
-            setError("No bid found for the selected produce.");
+        const validationError = validateForm();
+        if (validationError) {
+            setError(validationError);
             return;
         }
 
