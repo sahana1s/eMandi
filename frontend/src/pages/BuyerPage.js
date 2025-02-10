@@ -6,6 +6,35 @@ const BuyerPage = () => {
     const [bid, setBid] = useState({ produce_id: '', buyer_id: '', bid_amount: '' });
     const [produceList, setProduceList] = useState([]);
     const [bidList, setBidList] = useState([]);  // State for storing placed bids
+    const [error, setError] = useState(null);  // To hold validation error messages
+
+    // Regular Expression to check if name contains only alphabets and spaces
+    const nameValidationRegex = /^[A-Za-z\s]+$/;
+
+    // Validation function for the form
+    const validateForm = () => {
+        if (typeof form.name !== 'string' || form.name.trim() === '' || !nameValidationRegex.test(form.name)) {
+            return 'Name must be a non-empty string with no numbers.';
+        }
+        if (typeof form.address !== 'string' || form.address.trim() === '') {
+            return 'Address must be a non-empty string.';
+        }
+        return null;
+    };
+
+    // Validation function for placing a bid
+    const validateBid = () => {
+        if (typeof bid.produce_id !== 'string' || bid.produce_id.trim() === '') {
+            return 'Produce ID must be a non-empty string.';
+        }
+        if (typeof bid.buyer_id !== 'string' || bid.buyer_id.trim() === '') {
+            return 'Buyer ID must be a non-empty string.';
+        }
+        if (isNaN(bid.bid_amount) || bid.bid_amount <= 0) {
+            return 'Bid Amount must be a positive number.';
+        }
+        return null;
+    };
 
     // Fetch the produce list from the backend
     const fetchProduce = () => {
@@ -21,21 +50,32 @@ const BuyerPage = () => {
 
     // Register the buyer
     const handleRegister = () => {
+        const validationError = validateForm();
+        if (validationError) {
+            setError(validationError);
+            return;
+        }
+        
         axios.post('http://localhost:5000/buyer/register', form)
             .then(response => alert(response.data.message))
             .catch(err => console.error(err));
     };
 
+    // Place a bid
     const handlePlaceBid = () => {
+        const validationError = validateBid();
+        if (validationError) {
+            setError(validationError);
+            return;
+        }
+
         axios.post('http://localhost:5000/buyer/place-bid', bid)
             .then(response => {
                 alert(response.data.message);
-                // Assuming the response contains the bid data, you can add it to the bid list
                 setBidList([...bidList, bid]); // Add new bid to the bidList
             })
             .catch(err => console.error(err));
     };
-    
 
     // Fetch produce when the component mounts
     useEffect(() => {
@@ -45,6 +85,9 @@ const BuyerPage = () => {
     return (
         <div className="buyer-page">
             <h2>Buyer Dashboard</h2>
+
+            {/* Display Validation Error */}
+            {error && <div className="message error">{error}</div>}
 
             {/* Register Section */}
             <div className="form-section">
