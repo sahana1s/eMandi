@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
-import '../styles.css'
+import '../styles.css';
 
 // Set base URL for Axios
 axios.defaults.baseURL = 'http://localhost:5000/farmer';
@@ -12,8 +12,42 @@ const FarmerPage = () => {
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
 
+    // Regular Expression to check if name contains only alphabets and spaces
+    const nameValidationRegex = /^[A-Za-z\s]+$/;
+
+    // Validation functions
+    const validateForm = () => {
+        if (typeof form.name !== 'string' || form.name.trim() === '' || !nameValidationRegex.test(form.name)) {
+            return 'Name must be a non-empty string with no numbers.';
+        }
+        if (typeof form.address !== 'string' || form.address.trim() === '') {
+            return 'Address must be a non-empty string.';
+        }
+        return null;
+    };
+
+    const validateProduceForm = () => {
+        if (typeof produce.farmer_id !== 'string' || produce.farmer_id.trim() === '') {
+            return 'Farmer ID must be a non-empty string.';
+        }
+        if (typeof produce.name !== 'string' || produce.name.trim() === '' || !nameValidationRegex.test(produce.name)) {
+            return 'Produce Name must be a non-empty string with no numbers.';
+        }
+        if (isNaN(produce.quantity) || produce.quantity <= 0) {
+            return 'Quantity must be a positive number.';
+        }
+        return null;
+    };
+
     // Register Farmer
     const handleRegister = () => {
+        const validationError = validateForm();
+        if (validationError) {
+            setError(validationError);
+            setSuccessMessage(null);
+            return;
+        }
+
         axios.post('http://localhost:5000/farmer/register', form)
             .then(response => alert(response.data.message))
             .catch(err => console.error(err.response?.data || err.message));
@@ -21,6 +55,13 @@ const FarmerPage = () => {
 
     // Add Produce
     const handleAddProduce = () => {
+        const validationError = validateProduceForm();
+        if (validationError) {
+            setError(validationError);
+            setSuccessMessage(null);
+            return;
+        }
+
         axios.post('/produce', produce)
             .then(response => {
                 setSuccessMessage(response.data.message);
